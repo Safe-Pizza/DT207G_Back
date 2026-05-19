@@ -6,6 +6,8 @@ require('dotenv').config();
 
 //SQL-queries
 const menuAll = require('../queries/menuAll');
+const menuSpecific = require('../queries/menuSpecific');
+const menuDelete = require('../queries/menuDelete');
 
 const router = express.Router();
 
@@ -30,18 +32,36 @@ router.get('/', async (req, res) => {
 });
 
 //Hämta specifik
-router.get('/:id', (req, res) => {
-    res.json({ message: `Menu specific` });
+router.get('/:id', async (req, res) => {
+    try {
+        let result = await menuSpecific(req.params.id);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: `No meal with id: ${req.params.id}` });
+        }
+        return res.json(result.rows[0]);
+    } catch (error) {
+        return res.status(400).json({ message: `Error-message: ${error}` }); // felmeddelande
+    }
 });
 
 //Lägg till
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
     res.json({ message: `Menu post` });
 });
 
 //Ta bort specifik
 router.delete('/:id', authToken, async (req, res) => {
-    res.json({ message: `Delete menu specific`});
+    try {
+        let result = await menuDelete(req.params.id);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: `No meal found with ID: ${req.params.id}` });
+        }
+        return res.json({ message: `Success! Meal with ID: ${req.params.id} is deleted.` });
+    } catch (error) {
+        return res.status(400).json({ message: `Error-message: ${error}` }); // felmeddelande
+    }
 });
 
 module.exports = router;
