@@ -2,11 +2,14 @@
 const express = require('express');
 const db = require('../db/db');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+require('dotenv').config();
+
+//Hämta SQL-queries
 const createUser = require('../queries/userCreate');
 const userExists = require('../queries/userExists');
 const usersAll = require('../queries/usersAll');
-const bcrypt = require('bcrypt');
-require('dotenv').config();
+const userDelete = require('../queries/userDelete');
 
 const router = express.Router();
 
@@ -35,8 +38,17 @@ router.get('/users', authToken, async (req, res) => {
 });
 
 //skyddad route som tar bort användare, kräver giltig token
-router.delete('/users/:username', authToken, async (req, res) => {
-    res.json({ message: `Route delete user` });
+router.delete('/users/:email', authToken, async (req, res) => {
+    try {
+        let result = await userDelete(req.params.email);
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ message: "No user found with that username" });
+        }
+        return res.json({ message: `Success! User with email: ${req.params.email} is deleted.` });
+    } catch (error) {
+        return res.status(400).json({ message: `Error-message: ${error}` }); // felmeddelande
+    }
 });
 
 //Skapa användarkonto
