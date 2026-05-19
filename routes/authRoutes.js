@@ -75,6 +75,24 @@ router.post('/login', async (req, res) => {
         if (!email || !password) {
             return res.status(400).json({ message: `Invalid input: Email and password are required` });
         }
+
+        //kontrollera användare finns
+        const user = await userExists(email);
+
+        if (user.rowCount === 0) {
+            //användare finns ej
+            return res.status(401).json({ message: `Incorrect email or password` });
+        } else {
+            //användare finns
+            const passwordIsMatch = await bcrypt.compare(password, user.rows[0].password);
+
+            if(!passwordIsMatch) {
+                res.status(401).json ({ message: `Incorrect email or password`})
+            } else {
+                //Match lösenord
+                res.status(200).json({ message: `Valid login`})
+            }
+        }
     } catch (err) {
         res.status(500).json({ message: `Error occurred: ${error}` });
     }
