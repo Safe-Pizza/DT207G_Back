@@ -2,6 +2,8 @@
 const express = require('express');
 const db = require('../db/db');
 const jwt = require('jsonwebtoken');
+const createUser = require('../queries/userCreate');
+const userExists = require('../queries/userExists');
 require('dotenv').config();
 
 const router = express.Router();
@@ -42,8 +44,17 @@ router.post('/register', async (req, res) => {
         if (errors.length > 0) {
             return res.status(400).json({ message: errors });
         } else {
-            //skapa användare
-            
+
+            //kontroll finns användare
+            const user = await userExists(email);
+
+            if (user.rowCount !== 0) {
+                return res.status(401).json({ message: `User already exists` });
+            }
+
+            //lägg till användare
+            const result = await createUser(name, email, password);
+
             res.status(201).json({ message: `User ${email} created successfully` });
         }
 
@@ -54,7 +65,17 @@ router.post('/register', async (req, res) => {
 
 //Logga in
 router.post('/login', async (req, res) => {
-    res.json({ message: `Route login user` });
+    try {
+        const { email, password } = req.body;
+
+        //Validera input
+        if (!email || !password) {
+            return res.status(400).json({ message: `Invalid input: Email and password are required` });
+        }
+    } catch (err) {
+        res.status(500).json({ message: `Error occurred: ${error}` });
+    }
+
 });
 
 module.exports = router;

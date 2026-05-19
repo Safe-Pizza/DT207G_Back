@@ -6,7 +6,7 @@ const userCreate = (name, email, password) => {
     (name, email, password)
     VALUES ($1, $2, $3)
     RETURNING *`
-    return db.once(query, [name, email, password])
+    return db.query(query, [name, email, password])
 }
 
 module.exports = userCreate;
