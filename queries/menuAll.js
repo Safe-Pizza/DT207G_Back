@@ -1,9 +1,9 @@
 const db = require('../db/db');
 
-const usersAll = () => {
+const menuAll = () => {
     const query = `
-    SELECT * FROM user_cred`
+    SELECT * FROM menu`
     return db.query(query);
 }
 
-module.exports = usersAll;
+module.exports = menuAll;
