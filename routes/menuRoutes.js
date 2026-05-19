@@ -8,6 +8,7 @@ require('dotenv').config();
 const menuAll = require('../queries/menuAll');
 const menuSpecific = require('../queries/menuSpecific');
 const menuDelete = require('../queries/menuDelete');
+const menuCreate = require('../queries/menuCreate');
 
 const router = express.Router();
 
@@ -47,7 +48,53 @@ router.get('/:id', async (req, res) => {
 
 //Lägg till
 router.post('/', async (req, res) => {
-    res.json({ message: `Menu post` });
+    let {
+        title,
+        description,
+        price,
+        category,
+        allergy
+    } = req.body;
+
+    //varibel för felmeddelande
+    let errors = {
+        message: "",
+        detail: "",
+        https_res: {
+
+        }
+    };
+
+    //Kontroll inga tomma textfält
+    if (!title || !description || !price || !category || !allergy) {
+        //Felmeddelande
+        errors.message = "All params are not included";
+        errors.detail = "Must include title, description, price, category, allergy in JSON"
+        //Felkods-status
+        errors.https_res.message = "Bad request";
+        errors.https_res.code = 400;
+
+        res.status(400).json(errors);
+
+        return;
+    }
+
+    let meal = {
+        title: title,
+        description: description,
+        price: price,
+        category: category,
+        allergy: allergy,
+    }
+   //SQL-fråga lägga till i databas
+    try {
+        const result = menuCreate(title, description, price, category, allergy);
+        //Meddelande vid OK
+        res.status(201).json({ id: result.lastInsertRowid, ...req.body });
+    } catch (error) {
+        //Felmeddelande
+        res.status(500).json({ message: "Error occured: " + error });
+    }
 });
 
 //Ta bort specifik
