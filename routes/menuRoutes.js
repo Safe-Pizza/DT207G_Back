@@ -15,24 +15,23 @@ const router = express.Router();
 //Hämta middleware för att verifiera token
 const authToken = require('../authJwt/authToken');
 
-//Hämta alla
-
+//Hämta alla rätter i meny
 router.get('/', async (req, res) => {
     try {
-        let result = await menuAll(); //Query för alla användare
+        let result = await menuAll(); //Query för alla rätter
 
         //kontroll om databas saknar data
         if (result.rows.length === 0) {
             res.status(404).json({ message: "No meals found" });
         } else {
-            return res.json(result.rows); //returnera response med alla användare
+            return res.json(result.rows); //returnera response med alla rätter
         }
     } catch (error) {
         return res.status(500).json(error); // felmeddelande
     }
 });
 
-//Hämta specifik
+//Hämta specifik rätt
 router.get('/:id', async (req, res) => {
     try {
         let result = await menuSpecific(req.params.id);
@@ -46,7 +45,7 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-//Lägg till
+//Lägg till rätt
 router.post('/', async (req, res) => {
     let {
         title,
@@ -65,7 +64,7 @@ router.post('/', async (req, res) => {
         }
     };
 
-    //Kontroll inga tomma textfält
+    //Kontroll inga tomma fält
     if (!title || !description || !price || !category || !allergy) {
         //Felmeddelande
         errors.message = "All params are not included";

@@ -1,3 +1,5 @@
+const db = require('../db/db');
+
 const menuCreate = (title, description, price, category, allergy) => {
     const query = `
     INSERT INTO menu
