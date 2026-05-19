@@ -86,11 +86,17 @@ router.post('/login', async (req, res) => {
             //användare finns
             const passwordIsMatch = await bcrypt.compare(password, user.rows[0].password);
 
-            if(!passwordIsMatch) {
-                res.status(401).json ({ message: `Incorrect email or password`})
-            } else {
-                //Match lösenord
-                res.status(200).json({ message: `Valid login`})
+            if (!passwordIsMatch) {
+                res.status(401).json({ message: `Incorrect email or password` })
+            } else { //Match av lösenord
+                //Skapa JWT-token
+                const payload = { email: email };
+                const token = jwt.sign(payload, process.env.JWT_SECRET_KEY, { expiresIn: '1h' });
+                const response = {
+                    message: `User ${email} logged in successfully`,
+                    token: token
+                }
+                res.status(200).json(response);
             }
         }
     } catch (err) {
