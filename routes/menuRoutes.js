@@ -19,11 +19,12 @@ router.get('/:id', (req, res) => {
     res.json({ message: `Menu specific` });
 });
 
-//Hämta specifik
+//Lägg till
 router.post('/', (req, res) => {
     res.json({ message: `Menu post` });
 });
 
+//Ta bort specifik
 router.delete('/:id', authToken, async (req, res) => {
     res.json({ message: `Delete menu specific`});
 });
