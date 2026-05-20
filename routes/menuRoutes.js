@@ -4,8 +4,10 @@ const db = require('../db/db');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
 const path = require('path');
+const sharp = require('sharp');
 require('dotenv').config();
 
+/*
 //config för multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
@@ -16,8 +18,8 @@ const storage = multer.diskStorage({
         cb(null, `${Date.now()}${ext}`);
     }
 })
-
-const upload = multer({storage});
+*/
+const upload = multer({ storage: multer.memoryStorage() });
 
 //SQL-queries
 const menuAll = require('../queries/menuAll');
@@ -62,7 +64,7 @@ router.get('/:id', async (req, res) => {
 });
 
 //Lägg till rätt
-router.post('/', upload.single('image'), authToken, async (req, res) => {
+router.post('/', upload.single('image'), async (req, res) => {
     let {
         title,
         description,
@@ -88,27 +90,23 @@ router.post('/', upload.single('image'), authToken, async (req, res) => {
     if (allergy === "") {
         allergy = null;
     }
-    if (!req.file) {
-        image = null;
-    } else {
-        image = `http://localhost:5000/${req.file.destination}${req.file.filename}`;
-    }
-    if (typeof(price) !== 'number') {
+    if (typeof (price) !== 'number') {
         price = parseInt(price);
     }
     if (errors.length > 0) {
         return res.status(400).json({ message: errors });
     } else {
+        const outputFilename = `${Date.now()}.jpg`;
 
-        console.log(req.file.path);
+        if (!req.file) {
+            image = null;
+        } else {
+            await sharp(req.file.buffer)
+                .resize(300, 300, { fit: "cover" })
+                .jpeg({ quality: 90 })
+                .toFile(`uploads/${outputFilename}`);
 
-        let meal = {
-            title: title,
-            description: description,
-            price: price,
-            category: category,
-            allergy: allergy,
-            image: image
+            image = `http://localhost:5000/uploads/${outputFilename}`;
         }
         //SQL-fråga lägga till i databas
         try {
@@ -130,7 +128,8 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         description,
         price,
         category,
-        allergy
+        allergy,
+        image
     } = req.body;
 
     //Validera data
@@ -150,25 +149,23 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     if (allergy === "") {
         allergy = null;
     }
-    if (!req.file) {
-        image = null;
-    } else {
-        image = `http://localhost:5000/${req.file.destination}${req.file.filename}`;
-    }
-    if (typeof(price) !== 'number') {
+    if (typeof (price) !== 'number') {
         price = parseInt(price);
     }
     if (errors.length > 0) {
         return res.status(400).json({ message: errors });
     } else {
+        const outputFilename = `${Date.now()}.jpg`;
 
-        let meal = {
-            title: title,
-            description: description,
-            price: price,
-            category: category,
-            allergy: allergy,
-            image: image
+        if (!req.file) {
+            image = image;
+        } else {
+            await sharp(req.file.buffer)
+                .resize(300, 300, { fit: "cover" })
+                .jpeg({ quality: 90 })
+                .toFile(`uploads/${outputFilename}`);
+
+            image = `http://localhost:5000/uploads/${outputFilename}`;
         }
         //SQL-fråga lägga till i databas
         try {
