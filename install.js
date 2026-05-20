@@ -18,7 +18,9 @@ async function createTables() {
             description TEXT NOT NULL,
             price INT NOT NULL,
             category TEXT NOT NULL,
-            allergy TEXT)
+            allergy TEXT,
+            image TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
             `)
             console.log(res)
     } catch (err) {

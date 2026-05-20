@@ -52,47 +52,55 @@ router.post('/', async (req, res) => {
         description,
         price,
         category,
-        allergy
+        allergy,
+        image
     } = req.body;
 
-    //varibel för felmeddelande
-    let errors = {
-        message: "",
-        detail: "",
-        https_res: {
+    //Validera data
+    const errors = [];
+    if (!title) {
+        errors.push('Invalid input: Title is required');
+    }
+    if (!description) {
+        errors.push('Invalid input: Description is required');
+    }
+    if (!price) {
+        errors.push('Invalid input: Price is required');
+    }
+    if (!category) {
+        errors.push('Invalid input: Category is required');
+    }
+    if (allergy === "") {
+        allergy = null;
+    }
+    if (image === "") {
+        image = null;
+    }
+    if (typeof(price) !== 'number') {
+        errors.push('Invalid input: String is not a valid datatype of Price');
+    }
+    if (errors.length > 0) {
+        return res.status(400).json({ message: errors });
+    } else {
 
+        let meal = {
+            title: title,
+            description: description,
+            price: price,
+            category: category,
+            allergy: allergy,
+            image: image
         }
-    };
+        //SQL-fråga lägga till i databas
+        try {
+            const result = menuCreate(title, description, price, category, allergy, image);
 
-    //Kontroll inga tomma fält
-    if (!title || !description || !price || !category || !allergy) {
-        //Felmeddelande
-        errors.message = "All params are not included";
-        errors.detail = "Must include title, description, price, category, allergy in JSON"
-        //Felkods-status
-        errors.https_res.message = "Bad request";
-        errors.https_res.code = 400;
-
-        res.status(400).json(errors);
-
-        return;
-    }
-
-    let meal = {
-        title: title,
-        description: description,
-        price: price,
-        category: category,
-        allergy: allergy,
-    }
-   //SQL-fråga lägga till i databas
-    try {
-        const result = menuCreate(title, description, price, category, allergy);
-        //Meddelande vid OK
-        res.status(201).json({ id: result.lastInsertRowid, ...req.body });
-    } catch (error) {
-        //Felmeddelande
-        res.status(500).json({ message: "Error occured: " + error });
+            //Meddelande vid OK
+            res.status(201).json({ ...req.body });
+        } catch (error) {
+            //Felmeddelande
+            res.status(500).json({ message: "Error occured: " + error });
+        }
     }
 });
 
