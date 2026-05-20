@@ -24,6 +24,7 @@ const menuAll = require('../queries/menuAll');
 const menuSpecific = require('../queries/menuSpecific');
 const menuDelete = require('../queries/menuDelete');
 const menuCreate = require('../queries/menuCreate');
+const menuChange = require('../queries/menuChange');
 
 const router = express.Router();
 
@@ -115,6 +116,66 @@ router.post('/', upload.single('image'), authToken, async (req, res) => {
 
             //Meddelande vid OK
             res.status(201).json({ ...req.body });
+        } catch (error) {
+            //Felmeddelande
+            res.status(500).json({ message: "Error occured: " + error });
+        }
+    }
+});
+
+//Lägg till rätt
+router.put('/:id', upload.single('image'), async (req, res) => {
+    let {
+        title,
+        description,
+        price,
+        category,
+        allergy
+    } = req.body;
+
+    //Validera data
+    const errors = [];
+    if (!title) {
+        errors.push('Invalid input: Title is required');
+    }
+    if (!description) {
+        errors.push('Invalid input: Description is required');
+    }
+    if (!price) {
+        errors.push('Invalid input: Price is required');
+    }
+    if (!category) {
+        errors.push('Invalid input: Category is required');
+    }
+    if (allergy === "") {
+        allergy = null;
+    }
+    if (!req.file) {
+        image = null;
+    } else {
+        image = `http://localhost:5000/${req.file.destination}${req.file.filename}`;
+    }
+    if (typeof(price) !== 'number') {
+        price = parseInt(price);
+    }
+    if (errors.length > 0) {
+        return res.status(400).json({ message: errors });
+    } else {
+
+        let meal = {
+            title: title,
+            description: description,
+            price: price,
+            category: category,
+            allergy: allergy,
+            image: image
+        }
+        //SQL-fråga lägga till i databas
+        try {
+            const result = menuChange(title, description, price, category, allergy, image, req.params.id);
+
+            //Meddelande vid OK
+            res.status(201).json({ message: `${req.params.id} is changed ${req.body}` });
         } catch (error) {
             //Felmeddelande
             res.status(500).json({ message: "Error occured: " + error });
