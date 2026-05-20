@@ -7,18 +7,7 @@ const path = require('path');
 const sharp = require('sharp');
 require('dotenv').config();
 
-/*
-//config för multer
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, `uploads/`)
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname);
-        cb(null, `${Date.now()}${ext}`);
-    }
-})
-*/
+//Temp lagring med multer innan sharp
 const upload = multer({ storage: multer.memoryStorage() });
 
 //SQL-queries
@@ -96,11 +85,13 @@ router.post('/', upload.single('image'), async (req, res) => {
     if (errors.length > 0) {
         return res.status(400).json({ message: errors });
     } else {
+        //Hantering av eventuell bild
         const outputFilename = `${Date.now()}.jpg`;
 
-        if (!req.file) {
+        //kontroll finns bild
+        if (!req.file) { //om ej
             image = null;
-        } else {
+        } else { // om bild finns
             await sharp(req.file.buffer)
                 .resize(300, 300, { fit: "cover" })
                 .jpeg({ quality: 90 })
@@ -155,11 +146,13 @@ router.put('/:id', upload.single('image'), async (req, res) => {
     if (errors.length > 0) {
         return res.status(400).json({ message: errors });
     } else {
+        //Hantering av bild
         const outputFilename = `${Date.now()}.jpg`;
 
-        if (!req.file) {
+        //kontroll om bild finns
+        if (!req.file) { //ej bild
             image = image;
-        } else {
+        } else { //bild finns
             await sharp(req.file.buffer)
                 .resize(300, 300, { fit: "cover" })
                 .jpeg({ quality: 90 })
