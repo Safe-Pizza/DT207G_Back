@@ -2,7 +2,22 @@
 const express = require('express');
 const db = require('../db/db');
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
 require('dotenv').config();
+
+//config för multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, `uploads/`)
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        cb(null, `${Date.now()}${ext}`);
+    }
+})
+
+const upload = multer({storage});
 
 //SQL-queries
 const menuAll = require('../queries/menuAll');
@@ -46,14 +61,13 @@ router.get('/:id', async (req, res) => {
 });
 
 //Lägg till rätt
-router.post('/', async (req, res) => {
+router.post('/', upload.single('image'), authToken, async (req, res) => {
     let {
         title,
         description,
         price,
         category,
-        allergy,
-        image
+        allergy
     } = req.body;
 
     //Validera data
@@ -73,15 +87,19 @@ router.post('/', async (req, res) => {
     if (allergy === "") {
         allergy = null;
     }
-    if (image === "") {
+    if (!req.file) {
         image = null;
+    } else {
+        image = `http://localhost:5000/${req.file.destination}${req.file.filename}`;
     }
     if (typeof(price) !== 'number') {
-        errors.push('Invalid input: String is not a valid datatype of Price');
+        price = parseInt(price);
     }
     if (errors.length > 0) {
         return res.status(400).json({ message: errors });
     } else {
+
+        console.log(req.file.path);
 
         let meal = {
             title: title,
@@ -104,7 +122,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-//Ta bort specifik
+//Ta bort specifik rätt
 router.delete('/:id', authToken, async (req, res) => {
     try {
         let result = await menuDelete(req.params.id);

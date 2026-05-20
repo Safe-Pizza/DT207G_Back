@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const authRoute = require('./routes/authRoutes');
 const menuRoute = require('./routes/menuRoutes');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 //Varibel för express
@@ -17,6 +18,9 @@ app.use(cors());
 
 //Parse JSON
 app.use(express.json());
+
+//Statisk sökväg
+app.use(`/uploads`, express.static(path.join(__dirname, `uploads`)));
 
 //Variabel för port
 const port = process.env.PORT || 3000;
