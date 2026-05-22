@@ -53,7 +53,7 @@ router.get('/:id', async (req, res) => {
 });
 
 //Lägg till rätt
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.single('image'), authToken, async (req, res) => {
     let {
         title,
         description,
@@ -113,7 +113,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 });
 
 //Lägg till rätt
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', upload.single('image'), authToken, async (req, res) => {
     let {
         title,
         description,
