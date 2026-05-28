@@ -101,7 +101,7 @@ router.post('/', upload.single('image'), authToken, async (req, res) => {
         }
         //SQL-fråga lägga till i databas
         try {
-            const result = menuCreate(title, description, price, category, allergy, image);
+            const result = await menuCreate(title, description, price, category, allergy, image);
 
             //Meddelande vid OK
             res.status(201).json({ ...req.body });
@@ -162,7 +162,7 @@ router.put('/:id', upload.single('image'), authToken, async (req, res) => {
         }
         //SQL-fråga lägga till i databas
         try {
-            const result = menuChange(title, description, price, category, allergy, image, req.params.id);
+            const result = await menuChange(title, description, price, category, allergy, image, req.params.id);
 
             //Meddelande vid OK
             res.status(201).json({ message: `${req.params.id} is changed ${req.body}` });
